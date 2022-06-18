@@ -1,0 +1,8 @@
+[submodule "external/vcpkg"]
+	path = external/vcpkg
+	url = https://github.com/microsoft/vcpkg.git
+	ignore = all
+[submodule "external/DiligentEngine"]
+	path = external/DiligentEngine
+	url = https://github.com/DiligentGraphics/DiligentEngine
+	ignore = all

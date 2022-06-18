@@ -1,0 +1,14 @@
+{
+  "name": "effie-2d",
+  "version": "0.2",
+  "dependencies": [
+    "entt",
+    "vulkan",
+    {
+      "name": "sdl2",
+      "features": [
+        "vulkan"
+      ]
+    }
+  ]
+}

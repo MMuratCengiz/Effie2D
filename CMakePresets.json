@@ -1,0 +1,45 @@
+{
+  "configurePresets": [
+    {
+      "name": "Debug_MSVC",
+      "generator": "Ninja",
+      "installDir": "_build/debug-msvc",
+      "binaryDir": "_build/debug-msvc",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "VCPKG_TARGET_TRIPLET": "x64-windows-static"
+      }
+    },
+    {
+      "name": "Release_MSVC",
+      "generator": "Ninja",
+      "installDir": "_build/release-msvc",
+      "binaryDir": "_build/release-msvc",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "VCPKG_TARGET_TRIPLET": "x64-windows-static"
+      }
+    },
+    {
+      "name": "Debug_OSX",
+      "generator": "Xcode",
+      "installDir": "_build/debug-osx",
+      "binaryDir": "_build/debug-osx",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "VCPKG_TARGET_TRIPLET": "arm64-osx"
+      }
+    },
+    {
+      "name": "Release_OSX",
+      "generator": "Xcode",
+      "installDir": "_build/release-osx",
+      "binaryDir": "_build/release-osx",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "VCPKG_TARGET_TRIPLET": "arm64-osx"
+      }
+    }
+  ],
+  "version": 3
+}
