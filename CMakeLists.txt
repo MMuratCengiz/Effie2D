@@ -1,5 +1,9 @@
 # Note download depot_tools somewhere and add to path
 # http://commondatastorage.googleapis.com/chrome-infra-docs/flat/depot_tools/docs/html/depot_tools_tutorial.html#_setting_up
+# cd external/dawn
+# cp scripts/standalone.gclient .gclient
+# cd ..
+# gclient sync
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.22)
 SET(CMAKE_CXX_STANDARD 23)
@@ -25,6 +29,9 @@ SET(TINT_BUILD_GLSL_WRITER OFF CACHE BOOL "OpenGL SL writer")
 IF (WIN32)
     SET(TINT_BUILD_MSL_WRITER  OFF CACHE BOOL "Metal SL writer")
     SET(TINT_BUILD_SPV_WRITER  OFF CACHE BOOL "SPIR-V writer")
+ELSEIF(APPLE)
+    SET(TINT_BUILD_MSL_WRITER  ON CACHE BOOL "Metal SL writer")
+    SET(TINT_BUILD_HLSL_WRITER OFF CACHE BOOL "DirectX SL writer")
 ELSEIF(UNIX)
     SET(TINT_BUILD_MSL_WRITER  OFF CACHE BOOL "Metal SL writer")
     SET(TINT_BUILD_HLSL_WRITER OFF CACHE BOOL "DirectX SL writer")
