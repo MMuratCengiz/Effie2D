@@ -3,7 +3,6 @@
   "version": "0.2",
   "dependencies": [
     "entt",
-    "vulkan",
     {
       "name": "sdl2",
       "features": [

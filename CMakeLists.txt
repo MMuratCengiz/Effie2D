@@ -1,3 +1,6 @@
+# Note download depot_tools somewhere and add to path
+# http://commondatastorage.googleapis.com/chrome-infra-docs/flat/depot_tools/docs/html/depot_tools_tutorial.html#_setting_up
+
 CMAKE_MINIMUM_REQUIRED(VERSION 3.22)
 SET(CMAKE_CXX_STANDARD 23)
 
@@ -11,24 +14,39 @@ PROJECT(Effie2D VERSION 0.2)
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/Common.cmake)
 
 FIND_PACKAGE(SDL2 CONFIG REQUIRED)
-FIND_PACKAGE(Vulkan REQUIRED)
 
-ADD_SUBDIRECTORY(external/DiligentEngine/DiligentCore)
+SET(DAWN_ENABLE_PIC        ON CACHE BOOL "Position-Independent-Code")
+SET(DAWN_ENABLE_DESKTOP_GL OFF CACHE BOOL "OpenGL backend")
+SET(DAWN_ENABLE_OPENGLES   OFF CACHE BOOL "OpenGL ES backend")
+SET(DAWN_BUILD_EXAMPLES    ON CACHE BOOL "Dawn examples")
+SET(TINT_BUILD_SAMPLES     OFF CACHE BOOL "Tint examples")
+SET(TINT_BUILD_GLSL_WRITER OFF CACHE BOOL "OpenGL SL writer")
+
+IF (WIN32)
+    SET(TINT_BUILD_MSL_WRITER  OFF CACHE BOOL "Metal SL writer")
+    SET(TINT_BUILD_SPV_WRITER  OFF CACHE BOOL "SPIR-V writer")
+ELSEIF(UNIX)
+    SET(TINT_BUILD_MSL_WRITER  OFF CACHE BOOL "Metal SL writer")
+    SET(TINT_BUILD_HLSL_WRITER OFF CACHE BOOL "DirectX SL writer")
+ENDIF()
+
+ADD_SUBDIRECTORY(external/dawn dawn EXCLUDE_FROM_ALL)
 
 ADD_EXECUTABLE(Effie2D main.cpp)
 TARGET_COMPILE_OPTIONS(Effie2D PRIVATE -DUNICODE -DENGINE_DLL)
-TARGET_INCLUDE_DIRECTORIES(Effie2D PRIVATE "external/DiligentEngine/DiligentCore")
 TARGET_LINK_LIBRARIES(Effie2D
         PRIVATE
-        Diligent-GraphicsEngineD3D12-shared
-        Diligent-GraphicsEngineVk-shared
         SDL2::SDL2
         SDL2::SDL2main
         SDL2::SDL2-static
-        Vulkan::Vulkan
+        dawncpp
+        dawn_proc
+        dawn_common
+        dawn_platform
+        dawn_native
+        dawn_utils
+        dawn_sample_utils
         )
 
 COPY_TO_BINARY("shaders" "*.glsl")
 COPY_TO_BINARY("assets" "*.*")
-
-COPY_REQUIRED_DLLS(Effie2D)
