@@ -13,6 +13,14 @@ IF(WIN32)
     SET(VCPKG_TARGET_TRIPLET "x64-windows-static")
 ENDIF()
 
+OPTION(EFFIE_BUILD_SHARED "Enable to build shared libraries instead of static, default is off." OFF)
+
+SET(EFFIE_LIB_TYPE STATIC)
+
+IF(EFFIE_BUILD_SHARED)
+    SET(EFFIE_LIB_TYPE SHARED)
+ENDIF()
+
 INCLUDE("${CMAKE_CURRENT_SOURCE_DIR}/external/vcpkg/scripts/buildsystems/vcpkg.cmake")
 PROJECT(Effie2D VERSION 0.2)
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/Common.cmake)
@@ -38,21 +46,15 @@ ELSEIF(UNIX)
 ENDIF()
 
 ADD_SUBDIRECTORY(external/dawn dawn EXCLUDE_FROM_ALL)
+ADD_SUBDIRECTORY(Common)
+ADD_SUBDIRECTORY(Graphics)
+ADD_SUBDIRECTORY(Scene)
 
 ADD_EXECUTABLE(Effie2D main.cpp)
 TARGET_COMPILE_OPTIONS(Effie2D PRIVATE -DUNICODE -DENGINE_DLL)
 TARGET_LINK_LIBRARIES(Effie2D
-        PRIVATE
-        SDL2::SDL2
-        SDL2::SDL2main
-        SDL2::SDL2-static
-        dawncpp
-        dawn_proc
-        dawn_common
-        dawn_platform
-        dawn_native
-        dawn_utils
-        dawn_sample_utils
+        PUBLIC
+        EffieScene
         )
 
 COPY_TO_BINARY("shaders" "*.glsl")

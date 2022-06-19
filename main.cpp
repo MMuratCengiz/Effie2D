@@ -139,7 +139,8 @@ void init()
 
 	wgpu::TextureView view = texture.CreateView();
 
-	bindGroup = utils::MakeBindGroup(device, bgl, {{ 0, sampler }, { 1, view }});
+	bindGroup = utils::MakeBindGroup(device, bgl, {{ 0, sampler },
+												   { 1, view }});
 }
 
 struct
@@ -149,6 +150,7 @@ struct
 } s;
 
 int frameIndex = 0;
+
 void frame()
 {
 	wgpu::TextureView backBufferView = swapchain.GetCurrentTextureView();

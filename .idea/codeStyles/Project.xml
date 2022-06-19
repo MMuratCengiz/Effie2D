@@ -1,7 +1,7 @@
 <component name="ProjectCodeStyleConfiguration">
   <code_scheme name="Project" version="173">
     <Objective-C>
-      <option name="INDENT_VISIBILITY_KEYWORDS" value="1" />
+      <option name="INDENT_NAMESPACE_MEMBERS" value="0" />
       <option name="INDENT_INSIDE_CODE_BLOCK" value="2" />
       <option name="INDENT_DIRECTIVE_AS_CODE" value="true" />
       <option name="NAMESPACE_BRACE_PLACEMENT" value="2" />

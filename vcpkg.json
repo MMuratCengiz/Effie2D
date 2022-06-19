@@ -3,6 +3,7 @@
   "version": "0.2",
   "dependencies": [
     "entt",
+    "glog",
     {
       "name": "sdl2",
       "features": [
