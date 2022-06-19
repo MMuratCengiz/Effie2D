@@ -6,3 +6,7 @@
 	path = external/DiligentEngine
 	url = https://github.com/DiligentGraphics/DiligentEngine
 	ignore = all
+[submodule "external/dawn"]
+	path = external/dawn
+	url = https://dawn.googlesource.com/dawn
+	ignore = all
