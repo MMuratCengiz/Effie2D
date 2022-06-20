@@ -2,11 +2,13 @@
 
 #include "CommonIncludes.h"
 
-namespace BlazarEngine {
+namespace Effie
+{
 
-class Utilities {
+class Utilities
+{
 public:
-    static std::string ReadFile(const std::string &filename);
+	static std::string ReadFile(const std::string& filename);
 };
 
 }

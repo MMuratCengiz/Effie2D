@@ -1,17 +1,3 @@
-// Copyright 2017 The Dawn Authors
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 #include <vector>
 #include <string>
 
@@ -21,6 +7,10 @@
 #include "dawn/utils/ScopedAutoreleasePool.h"
 #include "dawn/utils/SystemUtils.h"
 #include "dawn/utils/WGPUHelpers.h"
+#include "Effie/RenderDevice.h"
+#include "Effie/RenderWindow.h"
+#include "Effie/Utilities.h"
+#include "tint/tint.h"
 
 wgpu::Device device;
 
@@ -69,7 +59,7 @@ void initTextures()
 	sampler = device.CreateSampler();
 
 	// Initialize the texture with arbitrary data until we can load images
-	std::vector< uint8_t > data(4 * 1024 * 1024, 0);
+	std::vector<uint8_t> data(4 * 1024 * 1024, 0);
 	for (size_t i = 0; i < data.size(); ++i)
 	{
 		data[i] = static_cast<uint8_t>(i % 253);
@@ -99,20 +89,13 @@ void init()
 	initBuffers();
 	initTextures();
 
-	wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, R"(
-        @vertex fn main(@location(0) pos : vec4<f32>)
-                            -> @builtin(position) vec4<f32> {
-            return pos;
-        })");
+	wgpu::ShaderModule vsModule =
+		utils::CreateShaderModule(device, Effie::Utilities::ReadFile("Shaders/Vertex/Sample1.wgsl").c_str());
 
-	wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, R"(
-        @group(0) @binding(0) var mySampler: sampler;
-        @group(0) @binding(1) var myTexture : texture_2d<f32>;
+	wgpu::ShaderModule fsModule =
+		utils::CreateShaderModule(device, Effie::Utilities::ReadFile("Shaders/Fragment/Sample1.wgsl").c_str());
 
-        @fragment fn main(@builtin(position) FragCoord : vec4<f32>)
-                              -> @location(0) vec4<f32> {
-            return textureSample(myTexture, mySampler, FragCoord.xy / vec2<f32>(640.0, 480.0));
-        })");
+
 
 	auto bgl = utils::MakeBindGroupLayout(
 		device, {
@@ -143,12 +126,6 @@ void init()
 												   { 1, view }});
 }
 
-struct
-{
-	uint32_t a;
-	float b;
-} s;
-
 int frameIndex = 0;
 
 void frame()
@@ -175,6 +152,8 @@ void frame()
 
 int main(int argc, const char* argv[])
 {
+//	Effie::RenderWindow window{ "T1", 1920, 1080 };
+//	Effie::RenderDevice d{ window.GetSDL_Window() };
 	if (!InitSample(argc, argv))
 	{
 		return 1;

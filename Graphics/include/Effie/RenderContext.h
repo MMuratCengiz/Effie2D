@@ -18,4 +18,8 @@ struct RenderContext
 	std::unique_ptr<dawn::native::Instance> DawnInstance;
 	wgpu::Device Device;
 	wgpu::SwapChain SwapChain;
+	wgpu::Surface Surface;
+
+	DawnProcTable DawnProcTable;
+	SDL_Window* Window;
 };

@@ -3,7 +3,14 @@
 using namespace Effie;
 
 RenderWindow::RenderWindow(const std::string &title, uint32_t width, uint32_t height) {
-    Uint32 windowFlags = SDL_WINDOW_VULKAN | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE;
+    Uint32 windowFlags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE;
+
+	#if __APPLE__
+	windowFlags |= SDL_WINDOW_METAL;
+	#elif MSVC || _WIN32 || WIN32
+	#else
+	windowFlags |= SDL_WINDOW_VULKAN;
+	#endif
 
     auto *w = SDL_CreateWindow(
             title.c_str(),

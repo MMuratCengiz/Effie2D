@@ -2,9 +2,35 @@
 
 using namespace Effie;
 
+void LogDeviceError(WGPUErrorType errorType, const char* message, void*)
+{
+	std::string errorTypeName;
+
+	switch (errorType)
+	{
+	case WGPUErrorType_Validation:
+		errorTypeName = "Validation";
+		break;
+	case WGPUErrorType_OutOfMemory:
+		errorTypeName = "Out of memory";
+		break;
+	case WGPUErrorType_Unknown:
+		errorTypeName = "Unknown";
+		break;
+	case WGPUErrorType_DeviceLost:
+		errorTypeName = "Device lost";
+		break;
+	default:
+		return;
+	}
+
+	LOG(ERROR) << errorTypeName << " error: " << message;
+}
+
 RenderDevice::RenderDevice(SDL_Window* window)
 {
-	context = std::make_unique< RenderContext >();
+	context = std::make_unique<RenderContext>();
+	context->Window = window;
 
 	ScopedEnvironmentVar angleDefaultPlatform;
 
@@ -13,110 +39,76 @@ RenderDevice::RenderDevice(SDL_Window* window)
 		angleDefaultPlatform.Set("ANGLE_DEFAULT_PLATFORM", "swiftshader");
 	}
 
-//	glfwSetErrorCallback(PrintGLFWError);
-//	if (!glfwInit())
-//	{
-//		wgpu::Device();
-//	}
-//
-//	// Create the test window and discover adapters using it (esp. for OpenGL)
-//	utils::SetupGLFWWindowHintsForBackend(backendType);
-//	glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GLFW_FALSE);
-//	window = glfwCreateWindow(640, 480, "Dawn window", nullptr, nullptr);
-//	if (!window)
-//	{
-//		wgpu::Device();
-//	}
-
-	context->DawnInstance = std::make_unique< dawn::native::Instance >();
+	context->DawnInstance = std::make_unique<dawn::native::Instance>();
 	context->DawnInstance->DiscoverDefaultAdapters();
 
+	dawn::native::Adapter fallbackAdapter;
+	dawn::native::Adapter backendAdapter;
+
+	std::vector<dawn::native::Adapter> adapters = context->DawnInstance->GetAdapters();
+	auto adapterIt = std::find_if(
+		adapters.begin(),
+		adapters.end(),
+		[](const dawn::native::Adapter& adapter)
+		{
+		  wgpu::AdapterProperties properties;
+		  adapter.GetProperties(&properties);
+		  return properties.adapterType == wgpu::AdapterType::DiscreteGPU;
+		}
+	);
+
+	ASSERT_TRUE(adapterIt == adapters.end() && adapters.empty(), "No suitable adapter found.");
+	if (adapterIt == adapters.end())
 	{
-		std::vector< dawn::native::Adapter > adapters = context->DawnInstance->GetAdapters();
-		auto adapterIt = std::find_if(adapters.begin(), adapters.end(),
-			[](const dawn::native::Adapter& adapter) -> bool
-			{
-			  wgpu::AdapterProperties properties;
-			  adapter.GetProperties(&properties);
-			  return true;
-			});
-		ASSERT(adapterIt != adapters.end());
-		backendAdapter = *adapterIt;
+		backendAdapter = adapters[0];
 	}
 
+	backendAdapter = *adapterIt;
+
 	WGPUDevice backendDevice = backendAdapter.CreateDevice();
-	DawnProcTable backendProcs = dawn::native::GetProcs();
+	context->Device = wgpu::Device::Acquire(backendDevice);
 
-	std::unique_ptr< wgpu::SurfaceDescriptorFromWindowsHWND > desc =
-		std::make_unique< wgpu::SurfaceDescriptorFromWindowsHWND >();
+	context->DawnProcTable = dawn::native::GetProcs();
 
-	// Create the swapchain
-	auto surfaceChainedDesc = utils::SetupWindowAndGetSurfaceDescriptor(window);
+	std::unique_ptr<wgpu::SurfaceDescriptorFromWindowsHWND> desc =
+		std::make_unique<wgpu::SurfaceDescriptorFromWindowsHWND>();
+
+	auto surfaceChainedDesc = SetupWindowAndGetSurfaceDescriptor(window);
 	WGPUSurfaceDescriptor surfaceDesc;
 	surfaceDesc.nextInChain = reinterpret_cast<WGPUChainedStruct*>(surfaceChainedDesc.get());
-	WGPUSurface surface = backendProcs.instanceCreateSurface(context->DawnInstance->Get(), &surfaceDesc);
+	auto surface = context->DawnProcTable.instanceCreateSurface(context->DawnInstance->Get(), &surfaceDesc);
+	context->Surface = wgpu::Surface::Acquire(surface);
 
+	CreateSwapChain();
+
+	dawnProcSetProcs(&context->DawnProcTable);
+	context->DawnProcTable.deviceSetUncapturedErrorCallback(backendDevice, LogDeviceError, nullptr);
+}
+
+void RenderDevice::CreateSwapChain()
+{
+	if (context->SwapChain != nullptr)
+	{
+		context->SwapChain.Release();
+	}
+
+	int w, h;
+	SDL_GetWindowSize(context->Window, &w, &h);
 	WGPUSwapChainDescriptor swapChainDesc;
 	swapChainDesc.usage = WGPUTextureUsage_RenderAttachment;
-	swapChainDesc.format = static_cast<WGPUTextureFormat>(GetPreferredSwapChainTextureFormat());
-	swapChainDesc.width = 640;
-	swapChainDesc.height = 480;
+	swapChainDesc.format = static_cast<WGPUTextureFormat>(wgpu::TextureFormat::BGRA8Unorm);
+	swapChainDesc.width = w;
+	swapChainDesc.height = h;
 	swapChainDesc.presentMode = WGPUPresentMode_Mailbox;
 	swapChainDesc.implementation = 0;
 	WGPUSwapChain backendSwapChain =
-		backendProcs.deviceCreateSwapChain(backendDevice, surface, &swapChainDesc);
+		context->DawnProcTable.deviceCreateSwapChain(context->Device.Get(), context->Surface.Get(), &swapChainDesc);
 
-	// Choose whether to use the backend procs and devices/swapchains directly, or set up the wire.
-	WGPUDevice cDevice = nullptr;
-	DawnProcTable procs;
-
-	switch (cmdBufType)
-	{
-	case CmdBufType::None:
-		procs = backendProcs;
-		cDevice = backendDevice;
-		swapChain = wgpu::SwapChain::Acquire(backendSwapChain);
-		break;
-
-	case CmdBufType::Terrible:
-	{
-		c2sBuf = new utils::TerribleCommandBuffer();
-		s2cBuf = new utils::TerribleCommandBuffer();
-
-		dawn::wire::WireServerDescriptor serverDesc = { };
-		serverDesc.procs = &backendProcs;
-		serverDesc.serializer = s2cBuf;
-
-		wireServer = new dawn::wire::WireServer(serverDesc);
-		c2sBuf->SetHandler(wireServer);
-
-		dawn::wire::WireClientDescriptor clientDesc = { };
-		clientDesc.serializer = c2sBuf;
-
-		wireClient = new dawn::wire::WireClient(clientDesc);
-		procs = dawn::wire::client::GetProcs();
-		s2cBuf->SetHandler(wireClient);
-
-		auto deviceReservation = wireClient->ReserveDevice();
-		wireServer->InjectDevice(backendDevice, deviceReservation.id,
-			deviceReservation.generation);
-		cDevice = deviceReservation.device;
-
-		auto swapChainReservation = wireClient->ReserveSwapChain(cDevice);
-		wireServer->InjectSwapChain(backendSwapChain, swapChainReservation.id,
-			swapChainReservation.generation, deviceReservation.id,
-			deviceReservation.generation);
-		swapChain = wgpu::SwapChain::Acquire(swapChainReservation.swapchain);
-	}
-		break;
-	}
-
-	dawnProcSetProcs(&procs);
-	procs.deviceSetUncapturedErrorCallback(cDevice, PrintDeviceError, nullptr);
-	context->Device = wgpu::Device::Acquire(cDevice);
+	context->SwapChain = wgpu::SwapChain::Acquire(backendSwapChain);
 }
 
-wgpu::Surface RenderDevice::CreateSurfaceForWindow(const wgpu::Instance& instance, SDL_Window* window) {
+wgpu::Surface RenderDevice::CreateSurfaceForWindow(const wgpu::Instance& instance, SDL_Window* window)
+{
 	std::unique_ptr<wgpu::ChainedStruct> chainedDescriptor =
 		SetupWindowAndGetSurfaceDescriptor(window);
 
@@ -127,7 +119,7 @@ wgpu::Surface RenderDevice::CreateSurfaceForWindow(const wgpu::Instance& instanc
 	return surface;
 }
 
-std::unique_ptr< wgpu::ChainedStruct > RenderDevice::SetupWindowAndGetSurfaceDescriptor(SDL_Window* window)
+std::unique_ptr<wgpu::ChainedStruct> RenderDevice::SetupWindowAndGetSurfaceDescriptor(SDL_Window* window)
 {
 #if DAWN_PLATFORM_IS(WINDOWS)
 	std::unique_ptr< wgpu::SurfaceDescriptorFromWindowsHWND > desc =
@@ -140,7 +132,13 @@ std::unique_ptr< wgpu::ChainedStruct > RenderDevice::SetupWindowAndGetSurfaceDes
 	desc->hinstance = wmInfo.info.win.hinstance;
 	return std::move(desc);
 #elif defined(DAWN_ENABLE_BACKEND_METAL)
-	return SetupWindowAndGetSurfaceDescriptorCocoa(window);
+	std::unique_ptr<wgpu::SurfaceDescriptorFromMetalLayer> desc =
+		std::make_unique<wgpu::SurfaceDescriptorFromMetalLayer>();
+
+	auto metalView = SDL_Metal_CreateView(window);
+	desc->layer = SDL_Metal_GetLayer(metalView);
+
+	return std::move(desc);
 #else
 	return nullptr;
 #endif

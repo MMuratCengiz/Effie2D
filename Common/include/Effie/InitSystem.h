@@ -2,11 +2,13 @@
 
 #include "CommonIncludes.h"
 
-namespace Effie {
+namespace Effie
+{
 
-class InitSystem {
+class InitSystem
+{
 public:
-    static void initEverything();
+	static void initEverything();
 };
 
 }
