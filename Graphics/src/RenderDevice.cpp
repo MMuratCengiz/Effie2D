@@ -29,7 +29,7 @@ void LogDeviceError(WGPUErrorType errorType, const char* message, void*)
 
 RenderDevice::RenderDevice(SDL_Window* window)
 {
-	context = std::make_unique<RenderContext>();
+	context = std::make_unique< RenderContext >();
 	context->Window = window;
 
 	ScopedEnvironmentVar angleDefaultPlatform;
@@ -39,13 +39,15 @@ RenderDevice::RenderDevice(SDL_Window* window)
 		angleDefaultPlatform.Set("ANGLE_DEFAULT_PLATFORM", "swiftshader");
 	}
 
-	context->DawnInstance = std::make_unique<dawn::native::Instance>();
+	context->DawnInstance = std::make_unique< dawn::native::Instance >();
 	context->DawnInstance->DiscoverDefaultAdapters();
 
 	dawn::native::Adapter fallbackAdapter;
 	dawn::native::Adapter backendAdapter;
 
-	std::vector<dawn::native::Adapter> adapters = context->DawnInstance->GetAdapters();
+	std::vector< dawn::native::Adapter > adapters = context->DawnInstance->GetAdapters();
+	ASSERT_TRUE(adapters.empty(), "No suitable adapter found.");
+
 	auto adapterIt = std::find_if(
 		adapters.begin(),
 		adapters.end(),
@@ -57,21 +59,15 @@ RenderDevice::RenderDevice(SDL_Window* window)
 		}
 	);
 
-	ASSERT_TRUE(adapterIt == adapters.end() && adapters.empty(), "No suitable adapter found.");
-	if (adapterIt == adapters.end())
-	{
-		backendAdapter = adapters[0];
-	}
-
-	backendAdapter = *adapterIt;
+	backendAdapter = adapterIt == adapters.end() ? adapters[0] : *adapterIt;
 
 	WGPUDevice backendDevice = backendAdapter.CreateDevice();
 	context->Device = wgpu::Device::Acquire(backendDevice);
 
 	context->DawnProcTable = dawn::native::GetProcs();
 
-	std::unique_ptr<wgpu::SurfaceDescriptorFromWindowsHWND> desc =
-		std::make_unique<wgpu::SurfaceDescriptorFromWindowsHWND>();
+	std::unique_ptr< wgpu::SurfaceDescriptorFromWindowsHWND > desc =
+		std::make_unique< wgpu::SurfaceDescriptorFromWindowsHWND >();
 
 	auto surfaceChainedDesc = SetupWindowAndGetSurfaceDescriptor(window);
 	WGPUSurfaceDescriptor surfaceDesc;
@@ -101,25 +97,14 @@ void RenderDevice::CreateSwapChain()
 	swapChainDesc.height = h;
 	swapChainDesc.presentMode = WGPUPresentMode_Mailbox;
 	swapChainDesc.implementation = 0;
+
 	WGPUSwapChain backendSwapChain =
 		context->DawnProcTable.deviceCreateSwapChain(context->Device.Get(), context->Surface.Get(), &swapChainDesc);
 
 	context->SwapChain = wgpu::SwapChain::Acquire(backendSwapChain);
 }
 
-wgpu::Surface RenderDevice::CreateSurfaceForWindow(const wgpu::Instance& instance, SDL_Window* window)
-{
-	std::unique_ptr<wgpu::ChainedStruct> chainedDescriptor =
-		SetupWindowAndGetSurfaceDescriptor(window);
-
-	wgpu::SurfaceDescriptor descriptor;
-	descriptor.nextInChain = chainedDescriptor.get();
-	wgpu::Surface surface = instance.CreateSurface(&descriptor);
-
-	return surface;
-}
-
-std::unique_ptr<wgpu::ChainedStruct> RenderDevice::SetupWindowAndGetSurfaceDescriptor(SDL_Window* window)
+std::unique_ptr< wgpu::ChainedStruct > RenderDevice::SetupWindowAndGetSurfaceDescriptor(SDL_Window* window)
 {
 #if DAWN_PLATFORM_IS(WINDOWS)
 	std::unique_ptr< wgpu::SurfaceDescriptorFromWindowsHWND > desc =

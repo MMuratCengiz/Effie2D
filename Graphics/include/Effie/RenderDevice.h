@@ -11,7 +11,6 @@ class RenderDevice
 public:
 	explicit RenderDevice(SDL_Window* window);
 private:
-	wgpu::Surface CreateSurfaceForWindow(const wgpu::Instance& instance, SDL_Window* window);
 	std::unique_ptr< wgpu::ChainedStruct > SetupWindowAndGetSurfaceDescriptor(SDL_Window* window);
 	void CreateSwapChain();
 

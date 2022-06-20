@@ -22,4 +22,6 @@ TARGET_LINK_LIBRARIES(
         SDL2::SDL2-static
 )
 
+#Re-enable once Dawn supports install targets
+#INSTALL_TARGET(EffieCommon)
 INSTALL_TARGET(EffieCommon)

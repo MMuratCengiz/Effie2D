@@ -11,6 +11,8 @@
 #include "Effie/RenderWindow.h"
 #include "Effie/Utilities.h"
 #include "tint/tint.h"
+#include "tint/reader/wgsl/parser.h"
+#include "tint/source.h"
 
 wgpu::Device device;
 
@@ -95,7 +97,10 @@ void init()
 	wgpu::ShaderModule fsModule =
 		utils::CreateShaderModule(device, Effie::Utilities::ReadFile("Shaders/Fragment/Sample1.wgsl").c_str());
 
+	tint::Source::File
+		f("Shaders/Fragment/Sample1.wgsl", Effie::Utilities::ReadFile("Shaders/Fragment/Sample1.wgsl").c_str());
 
+	auto r = tint::reader::wgsl::Parse(&f);
 
 	auto bgl = utils::MakeBindGroupLayout(
 		device, {

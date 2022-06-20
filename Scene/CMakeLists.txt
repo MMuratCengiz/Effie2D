@@ -9,6 +9,8 @@ ADD_LIBRARY(
         EffieScene ${EFFIE_LIB_TYPE} ${SceneSources}
 )
 
+
+
 TARGET_INCLUDE_DEFAULT_DIRECTORIES(EffieScene)
 
 TARGET_LINK_LIBRARIES(
@@ -17,4 +19,6 @@ TARGET_LINK_LIBRARIES(
         EffieGraphics
 )
 
-INSTALL_TARGET(EffieScene)
+#Re-enable once Dawn supports install targets
+#ADD_DEPENDENCIES(EffieScene EffieGraphics)
+#INSTALL_TARGET(EffieScene)

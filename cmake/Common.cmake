@@ -29,7 +29,7 @@ FUNCTION(COPY_TO_BINARY Dir FileSelect)
 ENDFUNCTION()
 
 FUNCTION(INSTALL_TARGET target)
-    IF (BLAZAR_INSTALL_LIBS)
+    IF (EFFIE_INSTALL_LIBS)
         INSTALL(TARGETS ${target}
                 EXPORT ${target}-export
                 LIBRARY DESTINATION lib

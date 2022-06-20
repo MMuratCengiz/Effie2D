@@ -13,6 +13,7 @@ IF(WIN32)
     SET(VCPKG_TARGET_TRIPLET "x64-windows-static")
 ENDIF()
 
+OPTION(EFFIE_INSTALL_LIBS "Install Effie Libraries" ON)
 OPTION(EFFIE_BUILD_SHARED "Enable to build shared libraries instead of static, default is off." OFF)
 
 SET(EFFIE_LIB_TYPE STATIC)
