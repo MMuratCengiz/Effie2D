@@ -157,19 +157,20 @@ void frame()
 
 int main(int argc, const char* argv[])
 {
-//	Effie::RenderWindow window{ "T1", 1920, 1080 };
-//	Effie::RenderDevice d{ window.GetSDL_Window() };
-	if (!InitSample(argc, argv))
-	{
-		return 1;
-	}
+	Effie::RenderWindow window{ "T1", 1920, 1080 };
+	Effie::RenderDevice d{ window.GetSDL_Window() };
 
-	init();
-
-	while (!ShouldQuit())
-	{
-		utils::ScopedAutoreleasePool pool;
-		frame();
-		frameIndex = (frameIndex + 1) % 3;
-	}
+//	if (!InitSample(argc, argv))
+//	{
+//		return 1;
+//	}
+//
+//	init();
+//
+//	while (!ShouldQuit())
+//	{
+//		utils::ScopedAutoreleasePool pool;
+//		frame();
+//		frameIndex = (frameIndex + 1) % 3;
+//	}
 }

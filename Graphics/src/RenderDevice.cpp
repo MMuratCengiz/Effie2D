@@ -1,4 +1,5 @@
 #include "Effie/RenderDevice.h"
+#include "Effie/ShaderReflection.h"
 
 using namespace Effie;
 
@@ -29,7 +30,7 @@ void LogDeviceError(WGPUErrorType errorType, const char* message, void*)
 
 RenderDevice::RenderDevice(SDL_Window* window)
 {
-	context = std::make_unique< RenderContext >();
+	context = std::make_unique<RenderContext>();
 	context->Window = window;
 
 	ScopedEnvironmentVar angleDefaultPlatform;
@@ -39,13 +40,13 @@ RenderDevice::RenderDevice(SDL_Window* window)
 		angleDefaultPlatform.Set("ANGLE_DEFAULT_PLATFORM", "swiftshader");
 	}
 
-	context->DawnInstance = std::make_unique< dawn::native::Instance >();
+	context->DawnInstance = std::make_unique<dawn::native::Instance>();
 	context->DawnInstance->DiscoverDefaultAdapters();
 
 	dawn::native::Adapter fallbackAdapter;
 	dawn::native::Adapter backendAdapter;
 
-	std::vector< dawn::native::Adapter > adapters = context->DawnInstance->GetAdapters();
+	std::vector<dawn::native::Adapter> adapters = context->DawnInstance->GetAdapters();
 	ASSERT_TRUE(adapters.empty(), "No suitable adapter found.");
 
 	auto adapterIt = std::find_if(
@@ -66,8 +67,8 @@ RenderDevice::RenderDevice(SDL_Window* window)
 
 	context->DawnProcTable = dawn::native::GetProcs();
 
-	std::unique_ptr< wgpu::SurfaceDescriptorFromWindowsHWND > desc =
-		std::make_unique< wgpu::SurfaceDescriptorFromWindowsHWND >();
+	std::unique_ptr<wgpu::SurfaceDescriptorFromWindowsHWND> desc =
+		std::make_unique<wgpu::SurfaceDescriptorFromWindowsHWND>();
 
 	auto surfaceChainedDesc = SetupWindowAndGetSurfaceDescriptor(window);
 	WGPUSurfaceDescriptor surfaceDesc;
@@ -79,6 +80,20 @@ RenderDevice::RenderDevice(SDL_Window* window)
 
 	dawnProcSetProcs(&context->DawnProcTable);
 	context->DawnProcTable.deviceSetUncapturedErrorCallback(backendDevice, LogDeviceError, nullptr);
+
+	ShaderReflection shaderReflection(
+		{
+			ShaderInfo
+				{
+					wgpu::ShaderStage::Vertex,
+					"Shaders/Vertex/Sample1.wgsl"
+				},
+			ShaderInfo
+				{
+					wgpu::ShaderStage::Fragment,
+					"Shaders/Fragment/Sample1.wgsl"
+				}
+		}, context.get(), { });
 }
 
 void RenderDevice::CreateSwapChain()
@@ -104,7 +119,7 @@ void RenderDevice::CreateSwapChain()
 	context->SwapChain = wgpu::SwapChain::Acquire(backendSwapChain);
 }
 
-std::unique_ptr< wgpu::ChainedStruct > RenderDevice::SetupWindowAndGetSurfaceDescriptor(SDL_Window* window)
+std::unique_ptr<wgpu::ChainedStruct> RenderDevice::SetupWindowAndGetSurfaceDescriptor(SDL_Window* window)
 {
 #if DAWN_PLATFORM_IS(WINDOWS)
 	std::unique_ptr< wgpu::SurfaceDescriptorFromWindowsHWND > desc =
