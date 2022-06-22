@@ -4,6 +4,8 @@
   "dependencies": [
     "entt",
     "glog",
+    "spirv-cross",
+    "glslang",
     {
       "name": "sdl2",
       "features": [

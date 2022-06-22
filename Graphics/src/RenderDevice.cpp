@@ -1,5 +1,6 @@
 #include "Effie/RenderDevice.h"
 #include "Effie/ShaderReflection.h"
+#include "Effie/SpirvHelper.h"
 
 using namespace Effie;
 
@@ -54,9 +55,9 @@ RenderDevice::RenderDevice(SDL_Window* window)
 		adapters.end(),
 		[](const dawn::native::Adapter& adapter)
 		{
-		  wgpu::AdapterProperties properties;
-		  adapter.GetProperties(&properties);
-		  return properties.adapterType == wgpu::AdapterType::DiscreteGPU;
+			wgpu::AdapterProperties properties;
+			adapter.GetProperties(&properties);
+			return properties.adapterType == wgpu::AdapterType::DiscreteGPU;
 		}
 	);
 
@@ -80,6 +81,7 @@ RenderDevice::RenderDevice(SDL_Window* window)
 
 	dawnProcSetProcs(&context->DawnProcTable);
 	context->DawnProcTable.deviceSetUncapturedErrorCallback(backendDevice, LogDeviceError, nullptr);
+	SpirvHelper::Init();
 
 	ShaderReflection shaderReflection(
 		{
@@ -142,4 +144,9 @@ std::unique_ptr<wgpu::ChainedStruct> RenderDevice::SetupWindowAndGetSurfaceDescr
 #else
 	return nullptr;
 #endif
+}
+
+RenderDevice::~RenderDevice()
+{
+	SpirvHelper::Destroy();
 }

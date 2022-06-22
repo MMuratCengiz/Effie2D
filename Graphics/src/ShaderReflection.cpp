@@ -3,6 +3,7 @@
 #include "dawn/utils/WGPUHelpers.h"
 #include "tint/source.h"
 #include "tint/reader/wgsl/parser.h"
+#include "Effie/SpirvHelper.h"
 
 using namespace Effie;
 
@@ -14,12 +15,12 @@ ShaderReflection::ShaderReflection(const std::initializer_list<ShaderInfo>& shad
 	{
 		std::string contents = Effie::Utilities::ReadFile(shaderInfo.Path);
 
-		// todo use glsl + spirv
-		wgpu::ShaderModuleWGSLDescriptor wgslDesc;
-		wgslDesc.source = contents.c_str();
-
+		const std::vector<uint32_t>& spv = SpirvHelper::GLSLtoSPV(shaderInfo.Stage, contents.c_str());
+		wgpu::ShaderModuleSPIRVDescriptor spirvDescriptor;
+		spirvDescriptor.code = spv.data();
+		spirvDescriptor.codeSize = spv.size();
 		wgpu::ShaderModuleDescriptor descriptor;
-		descriptor.nextInChain = &wgslDesc;
+		descriptor.nextInChain = &spirvDescriptor;
 		wgpu::ShaderModule module = context->Device.CreateShaderModule(&descriptor);
 
 		modules[shaderInfo.Stage] = std::move(module);
