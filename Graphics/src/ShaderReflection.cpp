@@ -14,8 +14,10 @@ ShaderReflection::ShaderReflection(const std::initializer_list<ShaderInfo>& shad
 	{
 		std::string contents = Effie::Utilities::ReadFile(shaderInfo.Path);
 
+		// todo use glsl + spirv
 		wgpu::ShaderModuleWGSLDescriptor wgslDesc;
 		wgslDesc.source = contents.c_str();
+
 		wgpu::ShaderModuleDescriptor descriptor;
 		descriptor.nextInChain = &wgslDesc;
 		wgpu::ShaderModule module = context->Device.CreateShaderModule(&descriptor);
@@ -41,14 +43,81 @@ void ShaderReflection::ParseShader(const wgpu::ShaderStage& stage, tint::Program
 	auto& n = program.Types();
 	auto& s = program.SemNodes();
 
-	for (auto t: program.Types()) {
-		auto name = t->FriendlyName(program.Symbols());
-		int j = 1;
+	std::vector<ShaderVarTypeInfo> types;
+
+	for (auto astNode : program.ASTNodes().Objects())
+	{
+		auto s1 = astNode->source;
+		auto a1 = astNode->TypeInfo();
+		int we2 = 1;
 	}
 
-	program.Symbols().Foreach([&](const tint::Symbol& symbol, const std::string& symbolName){
-		int l = 1;
+	for (auto semNode : program.SemNodes().Objects())
+	{
+		auto a2 = semNode->TypeInfo();
+		int we3 = 1;
+	}
+
+	for (auto t : program.Types())
+	{
+		ShaderVarTypeInfo& typeInfo = types.emplace_back();
+		typeInfo.Name = t->FriendlyName(program.Symbols());
+		SetShaderTypeEnum(t, typeInfo);
+		typeInfo.Size = t->Size();
+		typeInfo.Alignment = t->Align();
+	}
+
+	int it = 0;
+	program.Symbols().Foreach([&](const tint::Symbol& symbol, const std::string& symbolName)
+	{
+		if (symbol.value() < types.size())
+		{
+			auto toipe = types[symbol.value()];
+			auto toipe2 = types[it];
+			int l = 1;
+			it++;
+		}
 	});
 
 	int i = 0;
+}
+
+void ShaderReflection::SetShaderTypeEnum(const tint::sem::Type* t, ShaderVarTypeInfo& typeInfo) const
+{
+	if (t->is_signed_integer_scalar())
+	{
+		typeInfo.Type = ShaderVarType::Int32;
+	}
+	else if (t->is_integer_scalar())
+	{
+		typeInfo.Type = ShaderVarType::UInt32;
+	}
+	else if (t->is_bool_scalar_or_vector() && !t->is_bool_vector())
+	{
+		typeInfo.Type = ShaderVarType::Bool;
+	}
+	else if (t->is_bool_vector())
+	{
+		typeInfo.Type = ShaderVarType::BoolVector;
+	}
+	else if (t->is_float_scalar())
+	{
+		typeInfo.Type = ShaderVarType::Float;
+	}
+	else if (t->is_float_vector())
+	{
+		typeInfo.Type = ShaderVarType::FloatVector;
+	}
+	else if (t->is_float_matrix())
+	{
+		typeInfo.Type = ShaderVarType::FloatMatrix;
+	}
+	else if (t->is_abstract_or_scalar() && t->is_float_scalar())
+	{
+		typeInfo.Type = ShaderVarType::AbstractFloat;
+	}
+	else if (t->is_abstract_or_scalar() && t->is_integer_scalar())
+	{
+		typeInfo.Type = ShaderVarType::AbstractUInt32;
+	}
 }

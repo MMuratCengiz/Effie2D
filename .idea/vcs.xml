@@ -2,23 +2,6 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/external/DiligentEngine" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/external/DiligentEngine/DiligentCore" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/external/DiligentEngine/DiligentCore/ThirdParty/SPIRV-Cross" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/external/DiligentEngine/DiligentCore/ThirdParty/SPIRV-Headers" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/external/DiligentEngine/DiligentCore/ThirdParty/SPIRV-Tools" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/external/DiligentEngine/DiligentCore/ThirdParty/Vulkan-Headers" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/external/DiligentEngine/DiligentCore/ThirdParty/glslang" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/external/DiligentEngine/DiligentCore/ThirdParty/googletest" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/external/DiligentEngine/DiligentCore/ThirdParty/volk" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/external/DiligentEngine/DiligentCore/ThirdParty/xxHash" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/external/DiligentEngine/DiligentFX" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/external/DiligentEngine/DiligentSamples" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/external/DiligentEngine/DiligentSamples/ThirdParty/glfw" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/external/DiligentEngine/DiligentSamples/ThirdParty/nuklear" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/external/DiligentEngine/DiligentTools" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/external/DiligentEngine/DiligentTools/ThirdParty/args" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/external/DiligentEngine/DiligentTools/ThirdParty/imgui" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/external/dawn" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/external/dawn/build" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/external/dawn/buildtools" vcs="Git" />
