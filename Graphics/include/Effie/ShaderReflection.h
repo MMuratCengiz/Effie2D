@@ -3,7 +3,8 @@
 #include "Effie/RenderContext.h"
 #include "unordered_map"
 #include "tint/program.h"
-#include "s"
+#include "spirv_glsl.hpp"
+
 struct ShaderInfo
 {
 	wgpu::ShaderStage Stage;
@@ -41,6 +42,36 @@ struct ShaderVar
 	uint32_t Size;
 };
 
+struct SPIRVInfo
+{
+	wgpu::ShaderStage Stage;
+	std::vector<uint32_t> Data;
+};
+
+struct StructChild
+{
+	std::string name;
+	uint32_t offset;
+	uint32_t size;
+};
+
+struct SpvDecoration
+{
+	spirv_cross::SPIRType type;
+	uint32_t set;
+	uint32_t location;
+	uint32_t binding;
+	uint32_t arraySize;
+	uint32_t size;
+	std::string name;
+	std::vector<StructChild> children;
+};
+
+struct WGPUType
+{
+
+};
+
 namespace Effie
 {
 
@@ -56,10 +87,13 @@ public:
 		RenderContext* context,
 		const ShaderOptions& options = { });
 private:
-	void ParseShader(const wgpu::ShaderStage& stage, tint::Program program);
-	void SetShaderTypeEnum(const tint::sem::Type* t, ShaderVarTypeInfo& typeInfo) const;
+	void OnEachShader(const SPIRVInfo& shaderInfo);
+	SpvDecoration GetDecoration(const spirv_cross::Compiler& compiler, const spirv_cross::Resource& resource);
 
+	std::vector<SPIRVInfo> spirvInfos;
 	RenderContext* context;
+	ShaderOptions options;
+
 	std::unordered_map<wgpu::ShaderStage, wgpu::ShaderModule> modules;
 	std::vector<wgpu::BindGroupLayoutEntry> bindGroupLayoutEntries;
 	wgpu::BindGroupLayout bindGroupLayout;
