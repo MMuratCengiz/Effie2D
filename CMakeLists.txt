@@ -59,4 +59,5 @@ TARGET_LINK_LIBRARIES(Effie2D
         )
 
 COPY_TO_BINARY("Shaders" "*.wgsl")
+COPY_TO_BINARY("Shaders" "*.glsl")
 COPY_TO_BINARY("Assets" "*.*")

@@ -88,12 +88,12 @@ RenderDevice::RenderDevice(SDL_Window* window)
 			ShaderInfo
 				{
 					wgpu::ShaderStage::Vertex,
-					"Shaders/Vertex/Sample1.wgsl"
+					"Shaders/Vertex/Sample1.glsl"
 				},
 			ShaderInfo
 				{
 					wgpu::ShaderStage::Fragment,
-					"Shaders/Fragment/Sample1.wgsl"
+					"Shaders/Fragment/Sample1.glsl"
 				}
 		}, context.get(), { });
 }

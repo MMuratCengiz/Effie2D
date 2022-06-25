@@ -11,6 +11,7 @@
 #include "Effie/RenderWindow.h"
 #include "Effie/Utilities.h"
 #include "tint/source.h"
+#include "Effie/ShaderReflection.h"
 
 wgpu::Device device;
 

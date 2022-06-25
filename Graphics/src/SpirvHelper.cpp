@@ -123,8 +123,9 @@ std::vector<uint32_t> SpirvHelper::GLSLtoSPV(const wgpu::ShaderStage& stage, con
 	TBuiltInResource resources = { };
 	InitResources(resources);
 
-	glslang::TShader shader(GetLanguage(stage));
+	EShLanguage language = GetLanguage(stage);
 
+	glslang::TShader shader(language);
 	glslang::TProgram program;
 
 	const char* shaderStrings[1];
@@ -150,15 +151,17 @@ std::vector<uint32_t> SpirvHelper::GLSLtoSPV(const wgpu::ShaderStage& stage, con
 		return spirv;
 	}
 
-	glslang::GlslangToSpv(*program.getIntermediate(stage), spirv);
+	glslang::GlslangToSpv(*program.getIntermediate(language), spirv);
 	return std::move(spirv);
 }
+
 EShLanguage SpirvHelper::GetLanguage(const wgpu::ShaderStage& stage)
 {
 	EShLanguage language;
 	switch (stage)
 	{
 	case wgpu::ShaderStage::None:
+		language = { };
 		LOG(ERROR) << "Shader stage cannot be null.";
 		break;
 	case wgpu::ShaderStage::Vertex:
