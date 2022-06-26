@@ -85,6 +85,10 @@ public:
 	ShaderReflection(const std::initializer_list<ShaderInfo>& shaders,
 		RenderContext* context,
 		const ShaderOptions& options = { });
+
+	GETTER(wgpu::VertexState&, GetVertexState, vertexState)
+	GETTER(bool, HasFragmentState, hasFragmentState)
+	GETTER(wgpu::FragmentState&, GetFragmentState, fragmentState)
 private:
 	void OnEachShader(const SPIRVInfo& shaderInfo);
 	SpvDecoration GetDecoration(const spirv_cross::Compiler& compiler, const spirv_cross::Resource& resource);
@@ -95,6 +99,7 @@ private:
 	RenderContext* context;
 	ShaderOptions options;
 
+	bool hasFragmentState = false;
 	wgpu::VertexState vertexState{ };
 	wgpu::FragmentState fragmentState{ };
 

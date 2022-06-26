@@ -82,20 +82,6 @@ RenderDevice::RenderDevice(SDL_Window* window)
 	dawnProcSetProcs(&context->DawnProcTable);
 	context->DawnProcTable.deviceSetUncapturedErrorCallback(backendDevice, LogDeviceError, nullptr);
 	SpirvHelper::Init();
-
-	ShaderReflection shaderReflection(
-		{
-			ShaderInfo
-				{
-					wgpu::ShaderStage::Vertex,
-					"Shaders/Vertex/Sample1.glsl"
-				},
-			ShaderInfo
-				{
-					wgpu::ShaderStage::Fragment,
-					"Shaders/Fragment/Sample1.glsl"
-				}
-		}, context.get(), { });
 }
 
 void RenderDevice::CreateSwapChain()

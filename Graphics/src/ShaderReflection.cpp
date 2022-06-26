@@ -39,13 +39,13 @@ void ShaderReflection::OnEachShader(const SPIRVInfo& shaderInfo)
 	auto imageOutputs = shaderResources.stage_outputs;
 	auto stageInputs = shaderResources.stage_inputs;
 
-
 	if (shaderInfo.Stage == wgpu::ShaderStage::Vertex)
 	{
 		CreateVertexState(shaderInfo, compiler, stageInputs);
 	}
 	else if (shaderInfo.Stage == wgpu::ShaderStage::Fragment)
 	{
+		hasFragmentState = true;
 		CreateFragmentState(shaderInfo, imageOutputs);
 	}
 
@@ -73,7 +73,7 @@ void ShaderReflection::OnEachShader(const SPIRVInfo& shaderInfo)
 		bindLayoutEntry.buffer.type = wgpu::BufferBindingType::Uniform;
 	}
 
-	if (shaderPushConstants.size() > 0) {
+	if (!shaderPushConstants.empty()) {
 		LOG(ERROR) << "Push constants not yet supported by WebGPU";
 	}
 }
@@ -132,7 +132,7 @@ void ShaderReflection::CreateVertexState(const SPIRVInfo& shaderInfo,
 	}
 
 	vertexState.bufferCount = stageInputs.size();
-	vertexState.buffers = std::move(vertexBufferLayout.data());
+	vertexState.buffers = vertexBufferLayout.data();
 	vertexState.entryPoint = "main";
 }
 
@@ -154,6 +154,8 @@ void ShaderReflection::CreateFragmentState(const SPIRVInfo& shaderInfo,
 
 	for (auto & imageOutput: imageOutputs)
 	{
+		wgpu::ColorTargetState * targetState;
+		targetState->format = wgpu::TextureFormat;
 		// todo can we do anything here?
 	}
 }
@@ -244,7 +246,7 @@ SpvDecoration ShaderReflection::GetDecoration(const spirv_cross::Compiler& compi
 		// uint32_t m1_size = compiler.get_declared_struct_member_size( decoration.type, 0 );
 		uint32_t offsetIter = 0;
 
-		uint32_t size = 0;
+		uint32_t size;
 
 		for (uint32_t i = 0; offsetIter != structSize; i++)
 		{

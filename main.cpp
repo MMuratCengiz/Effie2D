@@ -7,11 +7,10 @@
 #include "dawn/utils/ScopedAutoreleasePool.h"
 #include "dawn/utils/SystemUtils.h"
 #include "dawn/utils/WGPUHelpers.h"
+#include "Effie/Utilities.h"
+#include "Effie/RenderPipeline.h"
 #include "Effie/RenderDevice.h"
 #include "Effie/RenderWindow.h"
-#include "Effie/Utilities.h"
-#include "tint/source.h"
-#include "Effie/ShaderReflection.h"
 
 wgpu::Device device;
 
@@ -96,10 +95,6 @@ void init()
 	wgpu::ShaderModule fsModule =
 		utils::CreateShaderModule(device, Effie::Utilities::ReadFile("Shaders/Fragment/Sample1.wgsl").c_str());
 
-	tint::Source::File
-		f("Shaders/Fragment/Sample1.wgsl", Effie::Utilities::ReadFile("Shaders/Fragment/Sample1.wgsl").c_str());
-
-
 	auto bgl = utils::MakeBindGroupLayout(
 		device, {
 			{ 0, wgpu::ShaderStage::Fragment, wgpu::SamplerBindingType::Filtering },
@@ -159,6 +154,24 @@ int main(int argc, const char* argv[])
 	Effie::RenderWindow window{ "T1", 1920, 1080 };
 	Effie::RenderDevice d{ window.GetSDL_Window() };
 
+	Effie::ShaderReflection shaderReflection(
+		{
+			ShaderInfo
+				{
+					wgpu::ShaderStage::Vertex,
+					"Shaders/Vertex/QuadPosition.glsl"
+				},
+			ShaderInfo
+				{
+					wgpu::ShaderStage::Fragment,
+					"Shaders/Fragment/QuadFragment.glsl"
+				}
+		}, d.GetContext(), { });
+
+	Effie::RenderPipeline renderPipeline{
+		Effie::RenderPipelineOptions(d.GetContext(), &shaderReflection)
+	};
+
 //	if (!InitSample(argc, argv))
 //	{
 //		return 1;
@@ -166,10 +179,29 @@ int main(int argc, const char* argv[])
 //
 //	init();
 //
-//	while (!ShouldQuit())
-//	{
-//		utils::ScopedAutoreleasePool pool;
-//		frame();
-//		frameIndex = (frameIndex + 1) % 3;
-//	}
+	bool running = true;
+	while (running)
+	{
+		SDL_Event event;
+		while (SDL_PollEvent(&event))
+		{
+			running = running && event.type != SDL_QUIT;
+		}
+
+		wgpu::TextureView backBufferView = d.GetContext()->SwapChain.GetCurrentTextureView();
+		utils::ComboRenderPassDescriptor renderPass({ backBufferView }, {});
+
+		wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+		{
+			wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass);
+			pass.SetPipeline(renderPipeline.GetInstance());
+			pass.Draw(3);
+			pass.End();
+		}
+
+		wgpu::CommandBuffer commands = encoder.Finish();
+		d.GetContext()->Device.GetQueue().Submit(1, &commands);
+		d.GetContext()->SwapChain.Present();
+		frameIndex = (frameIndex + 1) % 3;
+	}
 }

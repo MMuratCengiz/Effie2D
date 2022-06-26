@@ -15,6 +15,7 @@ SET(GraphicsSources
     src/RenderDevice.cpp
     src/ShaderReflection.cpp
     src/SpirvHelper.cpp
+    src/RenderPipeline.cpp
 )
 
 ADD_LIBRARY(
