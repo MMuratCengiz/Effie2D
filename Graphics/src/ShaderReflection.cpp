@@ -51,7 +51,7 @@ void ShaderReflection::OnEachShader(const SPIRVInfo& shaderInfo)
 
 	for (const spirv_cross::Resource& resource : samplers)
 	{
-		auto & bindLayoutEntry = bindGroupLayoutEntries.emplace_back();
+		auto& bindLayoutEntry = bindGroupLayoutEntries.emplace_back();
 
 		SpvDecoration decoration = GetDecoration(compiler, resource);
 
@@ -63,7 +63,7 @@ void ShaderReflection::OnEachShader(const SPIRVInfo& shaderInfo)
 
 	for (const spirv_cross::Resource& resource : uniforms)
 	{
-		auto & bindLayoutEntry = bindGroupLayoutEntries.emplace_back();
+		auto& bindLayoutEntry = bindGroupLayoutEntries.emplace_back();
 
 		SpvDecoration decoration = GetDecoration(compiler, resource);
 
@@ -73,7 +73,8 @@ void ShaderReflection::OnEachShader(const SPIRVInfo& shaderInfo)
 		bindLayoutEntry.buffer.type = wgpu::BufferBindingType::Uniform;
 	}
 
-	if (!shaderPushConstants.empty()) {
+	if (!shaderPushConstants.empty())
+	{
 		LOG(ERROR) << "Push constants not yet supported by WebGPU";
 	}
 }
@@ -112,7 +113,7 @@ void ShaderReflection::CreateVertexState(const SPIRVInfo& shaderInfo,
 		attribute.shaderLocation = decoration.location;
 		offsetIter += decoration.size * decoration.type.vecsize;
 
-		if (! options.InterleavedMode)
+		if (!options.InterleavedMode)
 		{
 			wgpu::VertexBufferLayout& layout = vertexBufferLayout.emplace_back();
 			layout.attributeCount = 1;
@@ -149,15 +150,6 @@ void ShaderReflection::CreateFragmentState(const SPIRVInfo& shaderInfo,
 	fragmentState.module = std::move(module);
 	fragmentState.entryPoint = "main";
 	fragmentState.targetCount = imageOutputs.size();
-
-	std::vector<wgpu::ColorTargetState> targetStates;
-
-	for (auto & imageOutput: imageOutputs)
-	{
-		wgpu::ColorTargetState * targetState;
-		targetState->format = wgpu::TextureFormat;
-		// todo can we do anything here?
-	}
 }
 
 wgpu::VertexFormat ShaderReflection::SPVToWGPUType(const spirv_cross::SPIRType& type)

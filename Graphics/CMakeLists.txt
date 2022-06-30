@@ -16,6 +16,8 @@ SET(GraphicsSources
     src/ShaderReflection.cpp
     src/SpirvHelper.cpp
     src/RenderPipeline.cpp
+    src/DescriptorSet.cpp
+    src/RenderBuffer.cpp
 )
 
 ADD_LIBRARY(

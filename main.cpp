@@ -56,6 +56,7 @@ void initTextures()
 	descriptor.usage = wgpu::TextureUsage::CopyDst | wgpu::TextureUsage::TextureBinding;
 	texture = device.CreateTexture(&descriptor);
 
+	wgpu::SamplerDescriptor d{};
 	sampler = device.CreateSampler();
 
 	// Initialize the texture with arbitrary data until we can load images
@@ -168,8 +169,11 @@ int main(int argc, const char* argv[])
 				}
 		}, d.GetContext(), { });
 
+	Effie::RenderPipelineOptions options(d.GetContext(), &shaderReflection);
+	auto& target = options.Targets.emplace_back( );
+	target.format = wgpu::TextureFormat::BGRA8Unorm;
 	Effie::RenderPipeline renderPipeline{
-		Effie::RenderPipelineOptions(d.GetContext(), &shaderReflection)
+		options
 	};
 
 //	if (!InitSample(argc, argv))
@@ -191,7 +195,7 @@ int main(int argc, const char* argv[])
 		wgpu::TextureView backBufferView = d.GetContext()->SwapChain.GetCurrentTextureView();
 		utils::ComboRenderPassDescriptor renderPass({ backBufferView }, {});
 
-		wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+		wgpu::CommandEncoder encoder = d.GetContext()->Device.CreateCommandEncoder();
 		{
 			wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass);
 			pass.SetPipeline(renderPipeline.GetInstance());

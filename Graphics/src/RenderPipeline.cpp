@@ -2,16 +2,14 @@
 
 using namespace Effie;
 
-RenderPipeline::RenderPipeline(const RenderPipelineOptions& options)
+RenderPipeline::RenderPipeline(RenderPipelineOptions opt)
 {
+	this->options = std::move(opt);
+
 	wgpu::RenderPipelineDescriptor descriptor{ };
 
 	ShaderReflection* shaderReflection = options.ShaderReflection;
 
-	if (shaderReflection->HasFragmentState())
-	{
-		descriptor.fragment = &shaderReflection->GetFragmentState();
-	}
 	descriptor.vertex = shaderReflection->GetVertexState();
 	descriptor.primitive.topology = wgpu::PrimitiveTopology::TriangleList;
 	descriptor.primitive.cullMode = options.CullMode;
@@ -20,6 +18,14 @@ RenderPipeline::RenderPipeline(const RenderPipelineOptions& options)
 	if (options.DepthStencilState.format != wgpu::TextureFormat::Undefined)
 	{
 		descriptor.depthStencil = &options.DepthStencilState;
+	}
+
+	if (shaderReflection->HasFragmentState())
+	{
+		fragmentState = shaderReflection->GetFragmentState();
+		fragmentState.targetCount = options.Targets.size();
+		fragmentState.targets = options.Targets.data();
+		descriptor.fragment = &fragmentState;
 	}
 
 	renderPipeline = options.Context->Device.CreateRenderPipeline(&descriptor);
